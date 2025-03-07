@@ -1,0 +1,64 @@
+version: "3.0"
+
+services:
+  db:
+    image: mariadb:10.4.19
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+      - --skip-character-set-client-handshake
+      - --innodb-buffer-pool-size=512m
+    volumes:
+      - ./my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./sql-test.sql:/docker-entrypoint-initdb.d/sql-test.sql:ro
+    environment:
+      - LANG=C.UTF-8
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=123456
+    network_mode: host
+
+  redis-standalone:
+    image: redis:5.0.14
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass 123456
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - TZ=Asia/Shanghai
+    network_mode: host
+
+#  node1:
+#    image: redis:6.2.6-bullseye
+#    # 必须设置cluster-announce-ip才能够在创建集群时节点join到master，否则会一直waiting...
+#    command: redis-server /usr/local/etc/redis/redis.conf --port 6380 --cluster-announce-ip 127.0.0.1
+#    volumes:
+#      - ./redis.cluster.conf:/usr/local/etc/redis/redis.conf
+#    environment:
+#      - TZ=Asia/Shanghai
+#    network_mode: 'host'
+#
+#  node2:
+#    image: redis:6.2.6-bullseye
+#    command: redis-server /usr/local/etc/redis/redis.conf --port 6381 --cluster-announce-ip 127.0.0.1
+#    volumes:
+#      - ./redis.cluster.conf:/usr/local/etc/redis/redis.conf
+#    environment:
+#      - TZ=Asia/Shanghai
+#    network_mode: 'host'
+#
+#  node3:
+#    image: redis:6.2.6-bullseye
+#    command: redis-server /usr/local/etc/redis/redis.conf --port 6382 --cluster-announce-ip 127.0.0.1
+#    volumes:
+#      - ./redis.cluster.conf:/usr/local/etc/redis/redis.conf
+#    environment:
+#      - TZ=Asia/Shanghai
+#    network_mode: 'host'
+#
+#  creator:
+#    image: redis:6.2.6-bullseye
+#    entrypoint: [ /bin/sh, -c, 'echo "yes" | redis-cli --cluster create 127.0.0.1:6380 127.0.0.1:6381 127.0.0.1:6382' ]
+#    depends_on:
+#      - node1
+#      - node2
+#      - node3
+#    network_mode: 'host'
