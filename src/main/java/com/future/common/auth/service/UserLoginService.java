@@ -105,7 +105,7 @@ public class UserLoginService extends ServiceImpl<UserMapper, User> {
                 log.debug("尝试使用唯一标识 {} 密码 {} 登录但失败", loginNameOrPhoneOrEmail, password);
             }
 
-            throw new BusinessException("提供的“帐号/手机/Email”或者密码错误！");
+            throw new BusinessException("提供的“帐号/手机/邮箱”或者密码错误！");
         }
 
         // 校验密码通过后分配token

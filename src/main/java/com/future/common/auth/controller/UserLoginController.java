@@ -29,7 +29,7 @@ public class UserLoginController {
      * @throws BusinessException
      */
     @PostMapping(value = "loginWithVerificationCode")
-    public ObjectResponse<LoginSuccessDTO> loginWithPhoneAndVerificationCode(
+    public ObjectResponse<LoginSuccessDTO> loginWithVerificationCode(
             @RequestParam(name = "phoneOrEmail", defaultValue = "") String phoneOrEmail,
             @RequestParam(name = "verificationCode", defaultValue = "") String verificationCode) throws Exception {
         return ResponseUtils.successObject(this.userLoginService.loginWithVerificationCode(phoneOrEmail, verificationCode));
