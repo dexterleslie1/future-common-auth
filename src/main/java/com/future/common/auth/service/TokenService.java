@@ -13,12 +13,15 @@ import com.future.common.constant.ErrorCodeConstant;
 import com.future.common.exception.BusinessException;
 import com.future.common.jwt.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -37,21 +40,26 @@ public class TokenService {
      */
     public final static int TtlRefreshTokenInSeconds = 30 * 24 * 3600;
 
-    @Autowired
+    @Resource
     AuthTokenMapper authTokenMapper;
-    @Autowired
+    @Resource
     UserMapper userMapper;
 
-    /**
-     * 是否使用jwt签发token
-     */
-    private boolean tokenAssignedByJwt = false;
+    @Value("${privateKey}")
+    String privateKey;
+    @Value("${publicKey}")
+    String publicKey;
 
     /**
-     * 分配token
+     * 是否使用jwt签发token，注意：系统当前只支持 JWT 即可（没有需求为非 JWT），所以硬编码为 true
+     */
+    private boolean tokenAssignedByJwt = true;
+
+    /**
+     * 用户登录或者refresh token时候分配token
      *
-     * @param userId
-     * @param type
+     * @param userId 用户ID
+     * @param type   token 类型，参考 {@link AuthTokenType}
      */
     String assign(Long userId, AuthTokenType type) throws NoSuchAlgorithmException, InvalidKeySpecException {
         // 不使用jwt签发token
@@ -61,8 +69,7 @@ public class TokenService {
             if (log.isDebugEnabled())
                 log.debug("随机生成的token {} 类型 {} 用户id {}", token, type, userId);
 
-            // todo 并发控制
-            // userId+type是唯一的
+            // userId+type 是唯一的
             QueryWrapper<AuthToken> queryWrapper = Wrappers.query();
             queryWrapper.eq("userId", userId);
             queryWrapper.eq("`type`", type);
@@ -91,13 +98,35 @@ public class TokenService {
 
             return token;
         } else {
-            String token = JwtUtil.signWithPrivateKey(null, new Consumer<JWTCreator.Builder>() {
-                @Override
-                public void accept(JWTCreator.Builder builder) {
-                    builder.withClaim("tokenType", type.name())
-                            .withClaim("userId", userId);
+            String token;
+            try {
+                token = JwtUtil.signWithPrivateKey(this.privateKey, new Consumer<JWTCreator.Builder>() {
+                    @Override
+                    public void accept(JWTCreator.Builder builder) {
+                        LocalDateTime now = LocalDateTime.now();
+                        Date expiresAt = Date.from(now.plusSeconds(
+                                        type == AuthTokenType.Access ? TtlAccessTokenInSeconds : TtlRefreshTokenInSeconds)
+                                .toInstant(ZoneOffset.ofHours(8)));
+                        if (log.isDebugEnabled()) {
+                            log.debug("token 过期时间为 {}", expiresAt);
+                        }
+
+                        builder.withClaim("tokenType", type.name())
+                                .withClaim("userId", userId)
+                                // 设置 JWT Token 过期时间
+                                .withExpiresAt(expiresAt)
+                                // 协助过期逻辑判断是否过期
+                                .withIssuedAt(Date.from(now.toInstant(ZoneOffset.ofHours(8))));
+                    }
+                });
+            } catch (Exception ex) {
+                if (ex instanceof IllegalArgumentException) {
+                    log.warn(ex.getMessage(), ex);
+                } else {
+                    log.error(ex.getMessage(), ex);
                 }
-            });
+                throw ex;
+            }
 
             if (log.isDebugEnabled())
                 log.debug("使用jwt生成的token {} 类型 {} 用户id {}", token, type, userId);
@@ -106,15 +135,34 @@ public class TokenService {
         }
     }
 
+    /**
+     * 调用接口时拦截器校验 token 是否合法、是否过期、是否已经被注销等
+     *
+     * @param token
+     * @param type
+     * @return
+     * @throws BusinessException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
     public User validate(String token, AuthTokenType type) throws BusinessException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isDebugEnabled())
             log.debug("请求校验token {} 类型 {}", token, type);
 
         AuthToken authToken = this.get(token, type);
+        if (authToken == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("token {} type {} 不存在", token, type);
+            }
+            throw new BusinessException(ErrorCodeConstant.ErrorCodeLoginRequired, "您未登录");
+        }
 
         // 校验token类型是否匹配
         try {
             this.validateTokenType(authToken.getType(), type);
+            if (log.isDebugEnabled()) {
+                log.debug("token {} type {} 通过类型匹配校验", token, type);
+            }
         } catch (IllegalArgumentException ex) {
             if (log.isDebugEnabled())
                 log.debug("token {} 类型 {} 和 类型 {} 不匹配", token, authToken.getType(), type);
@@ -136,7 +184,16 @@ public class TokenService {
         return this.userMapper.selectById(userId);
     }
 
-    // 根据token+类型获取AuthToken
+    /**
+     * 根据 token+type 获取AuthToken
+     *
+     * @param token
+     * @param type
+     * @return
+     * @throws BusinessException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
     AuthToken get(String token, AuthTokenType type) throws BusinessException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (!this.tokenAssignedByJwt) {
             QueryWrapper<AuthToken> queryWrapper = Wrappers.query();
@@ -152,7 +209,7 @@ public class TokenService {
 
             return authToken;
         } else {
-            DecodedJWT decodedJWT = JwtUtil.verifyWithPublicKey(null, token);
+            DecodedJWT decodedJWT = JwtUtil.verifyWithPublicKey(this.publicKey, token);
             AuthTokenType tokenTypeDecoded = decodedJWT.getClaim("tokenType").as(AuthTokenType.class);
             Long userId = decodedJWT.getClaim("userId").asLong();
 
@@ -165,7 +222,12 @@ public class TokenService {
         }
     }
 
-    // 校验实际的token类型是否和预期的token类型相符合
+    /**
+     * 校验实际的token类型是否和预期的token类型相符合
+     *
+     * @param tokenTypeActual
+     * @param tokenTypeExpect
+     */
     void validateTokenType(AuthTokenType tokenTypeActual, AuthTokenType tokenTypeExpect) {
         Assert.isTrue(tokenTypeActual.equals(tokenTypeExpect), "不存在token");
     }
@@ -178,19 +240,7 @@ public class TokenService {
      * @throws BusinessException
      */
     public String refreshAccessToken(String refreshToken) throws BusinessException, NoSuchAlgorithmException, InvalidKeySpecException {
-//        QueryWrapper<AuthToken> queryWrapper = Wrappers.query();
-//        queryWrapper.eq("token", refreshToken);
-//        queryWrapper.eq("`type`", AuthTokenType.Refresh);
-//        AuthToken authToken = this.authTokenMapper.selectOne(queryWrapper);
-
         AuthToken authToken = this.get(refreshToken, AuthTokenType.Refresh);
-
-//        if (authToken == null) {
-//            if (log.isDebugEnabled())
-//                log.debug("不存在token {} 类型 {}", refreshToken, AuthTokenType.Refresh);
-//
-//            throw new BusinessException("不存在token");
-//        }
 
         // 校验refresh token是否过期
         this.validateExpired(authToken);

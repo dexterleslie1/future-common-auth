@@ -16,6 +16,13 @@
     </properties>
 
     <dependencies>
+        <!-- swagger3依赖 -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
         <!-- future-common 依赖 -->
         <dependency>
             <groupId>com.github.dexterleslie1</groupId>

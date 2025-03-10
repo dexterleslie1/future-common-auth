@@ -1,4 +1,4 @@
-package com.future.common.auth;
+package com.future.test;
 
 import com.future.common.auth.service.VerificationCodeService;
 import com.future.common.phone.RandomPhoneGeneratorUtil;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {ApplicationTestConfig.class})
+@SpringBootTest(classes = {ApplicationTestConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @AutoConfigureMockMvc
 public class ApplicationTests {
     @Resource
@@ -78,11 +78,24 @@ public class ApplicationTests {
         // region 测试使用帐号注册和登录
         {
             String loginName = RandomStringUtils.randomAlphanumeric(20);
+
+            // 在注册时，用于设置帐号是否已经存在 UI 提示标记
+            this.mockMvc.perform(get("/api/v1/future/auth/checkIfLoginNameExists")
+                            .queryParam("loginName", loginName))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data", is(false)));
+
             this.mockMvc.perform(post("/api/v1/future/auth/registerWithLoginName")
                             .queryParam("loginName", loginName)
                             .queryParam("password", "123456"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data", is("注册成功")));
+
+            // 在注册时，用于设置帐号是否已经存在 UI 提示标记
+            this.mockMvc.perform(get("/api/v1/future/auth/checkIfLoginNameExists")
+                            .queryParam("loginName", loginName))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data", is(true)));
 
             // 用户登录
             ResultActions resultActions = this.mockMvc.perform(post("/api/v1/future/auth/loginWithPassword")

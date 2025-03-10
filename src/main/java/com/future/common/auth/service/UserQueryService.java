@@ -1,5 +1,7 @@
 package com.future.common.auth.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.future.common.auth.dto.UserDTO;
 import com.future.common.auth.entity.User;
@@ -35,5 +37,18 @@ public class UserQueryService extends ServiceImpl<UserMapper, User> {
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(user, userDTO);
         return userDTO;
+    }
+
+    /**
+     * 在注册时，用于设置帐号是否已经存在 UI 提示标记
+     *
+     * @param loginName 帐号
+     * @return 帐号存在返回 true，否则返回 false
+     */
+    public boolean checkIfLoginNameExists(String loginName) {
+        LambdaQueryWrapper<User> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.eq(User::getLoginName, loginName);
+        User user = this.getOne(queryWrapper, true);
+        return user != null;
     }
 }
