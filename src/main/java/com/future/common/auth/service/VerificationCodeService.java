@@ -6,11 +6,10 @@ import com.future.common.phone.PhoneUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.TimeUnit;
@@ -18,8 +17,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * 验证码相关业务
  */
-// todo 代码格式化更加好看
-@Service
 @Slf4j
 public class VerificationCodeService {
     public final static String VerificationCodeKeyPrefix = "vc#";
@@ -36,10 +33,10 @@ public class VerificationCodeService {
      */
     public final static int VerificationCodeVerifyFailCounterTTLInSeconds = VerificationCodeTTLInSeconds + 30;
 
-    @Autowired
+    @Resource
     SmsService smsService = null;
 
-    @Autowired
+    @Resource
     RedisTemplate<String, String> redisTemplate = null;
 
     EmailValidator emailValidator = EmailValidator.getInstance();

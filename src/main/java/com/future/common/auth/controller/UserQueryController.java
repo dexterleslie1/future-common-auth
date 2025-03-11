@@ -30,7 +30,7 @@ public class UserQueryController {
 
     @ApiOperation(value = "获取个人信息")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = HttpHeaders.AUTHORIZATION, value = "accessToken", required = true, dataType = "String", paramType = "header"),
+            @ApiImplicitParam(name = HttpHeaders.AUTHORIZATION, value = "Access Token", required = true, dataType = "String", paramType = "header"),
     })
     @GetMapping("getSelfInfo")
     public ObjectResponse<UserDTO> getSelfInfo(CustomizeAuthentication authentication) throws BusinessException {

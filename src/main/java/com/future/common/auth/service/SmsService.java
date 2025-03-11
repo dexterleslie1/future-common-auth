@@ -3,13 +3,11 @@ package com.future.common.auth.service;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.future.common.phone.PhoneUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 /**
  * 短信相关业务
  */
-@Service
 @Slf4j
 public class SmsService {
     /**

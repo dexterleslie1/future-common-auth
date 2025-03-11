@@ -3,10 +3,8 @@ package com.future.common.auth.config;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-@Configuration
 // 加载mybatis-plus properties默认配置
 @PropertySource("classpath:default-config-for-mybatis-plus.properties")
 public class ConfigMyBatisPlus {

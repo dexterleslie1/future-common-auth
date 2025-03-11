@@ -2,21 +2,19 @@ package com.future.common.auth.security;
 
 import com.future.common.auth.config.FutureAuthProperties;
 import com.future.common.auth.entity.AuthTokenType;
-import com.future.common.auth.entity.User;
 import com.future.common.auth.service.TokenService;
 import com.future.common.constant.ErrorCodeConstant;
 import com.future.common.exception.BusinessException;
 import com.future.common.http.ObjectResponse;
 import com.future.common.http.ResponseUtils;
 import com.future.common.json.JSONUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.annotation.Resource;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -25,11 +23,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 // 验证用户是否登录拦截器
-@Component
 public class CustomizeTokenAuthenticationFilter extends OncePerRequestFilter {
-    @Autowired
+    @Resource
     TokenService tokenService;
-    @Autowired
+    @Resource
     FutureAuthProperties futureAuthProperties;
 
     @Override
@@ -46,16 +43,16 @@ public class CustomizeTokenAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain) throws IOException {
         try {
             // 获取请求中携带的token并在本地查询是否有此token，
             // 是，则构造Authentication对象并注入到请求上下文中
             String token = obtainBearerToken(request);
             if (StringUtils.hasText(token)) {
-                User user = this.tokenService.validate(token, AuthTokenType.Access);
+                Long userId = this.tokenService.validate(token, AuthTokenType.Access);
 
-                if (user != null) {
-                    CustomizeUser customizeUser = new CustomizeUser(user.getId());
+                if (userId != null) {
+                    CustomizeUser customizeUser = new CustomizeUser(userId);
                     CustomizeAuthentication authentication = new CustomizeAuthentication(customizeUser);
                     authentication.setAuthenticated(true);
                     SecurityContextHolder.getContext().setAuthentication(authentication);

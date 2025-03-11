@@ -12,13 +12,11 @@ import com.future.common.phone.PhoneUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-@Service
 @Slf4j
 public class UserLoginService extends ServiceImpl<UserMapper, User> {
     @Resource

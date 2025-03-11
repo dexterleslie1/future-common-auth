@@ -1,8 +1,9 @@
-package com.future.test;
+package com.future.test.authorizationserver;
 
 import com.future.common.auth.service.VerificationCodeService;
 import com.future.common.phone.RandomPhoneGeneratorUtil;
 import com.jayway.jsonpath.JsonPath;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -24,16 +26,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = {ApplicationTestConfig.class}, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = {AuthorizationServerTestConfig.class})
+@ActiveProfiles("authorizationserver")
 @AutoConfigureMockMvc
-public class ApplicationTests {
+@Slf4j
+public class AuthorizationServerTests {
     @Resource
     MockMvc mockMvc;
     @SpyBean
     VerificationCodeService verificationCodeService;
 
     @Test
-    public void contextLoads() throws Exception {
+    public void test() throws Exception {
         // region 测试使用手机注册和登录
         {
             // 随机生成手机号码
@@ -118,6 +122,7 @@ public class ApplicationTests {
         }
         // endregion
 
+        String accessTokenAssistant = null;
         // region 测试使用email注册和登录
         {
             // 随机生成手机号码
@@ -155,7 +160,12 @@ public class ApplicationTests {
             JSON = resultActions.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
             Assertions.assertEquals(userId, JsonPath.read(JSON, "$.data.id"));
             Assertions.assertEquals(email, JsonPath.read(JSON, "$.data.email"));
+
+            accessTokenAssistant = accessToken;
         }
         // endregion
+
+        // 用于协助测试 ResourceServer，打印一个 JWT Access Token，需要手动复制到 ResourceServerTests 中
+        log.debug("JWT Access Token: {}", accessTokenAssistant);
     }
 }

@@ -8,7 +8,6 @@ import com.future.common.auth.mapper.UserMapper;
 import com.future.common.exception.BusinessException;
 import com.future.common.phone.PhoneUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotBlank;
@@ -18,7 +17,6 @@ import java.time.LocalDateTime;
 /**
  * 用户注册业务
  */
-@Service
 @Slf4j
 public class UserRegisterService extends ServiceImpl<UserMapper, User> {
     @Resource

@@ -9,10 +9,8 @@ import com.future.common.auth.mapper.UserMapper;
 import com.future.common.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-@Service
 @Slf4j
 public class UserQueryService extends ServiceImpl<UserMapper, User> {
 

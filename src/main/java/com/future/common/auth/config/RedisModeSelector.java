@@ -1,6 +1,6 @@
 package com.future.common.auth.config;
 
-import com.future.common.auth.EnableFutureAuthorization;
+import com.future.common.auth.EnableFutureAuthorizationServer;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
 
@@ -11,7 +11,7 @@ public class RedisModeSelector implements ImportSelector {
     @Override
     public String[] selectImports(AnnotationMetadata importingClassMetadata) {
         // 获取 @EnableMyCache 缓存类型注解值
-        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(EnableFutureAuthorization.class.getName());
+        Map<String, Object> annotationAttributes = importingClassMetadata.getAnnotationAttributes(EnableFutureAuthorizationServer.class.getName());
         RedisMode redisMode = (RedisMode) annotationAttributes.get("redisMode");
         switch (redisMode) {
             case Standalone: {

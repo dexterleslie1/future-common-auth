@@ -5,7 +5,6 @@ import com.future.common.auth.security.CustomizeTokenAuthenticationFilter;
 import com.future.common.constant.ErrorCodeConstant;
 import com.future.common.http.ObjectResponse;
 import com.future.common.http.ResponseUtils;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
 @EnableWebSecurity
 // 保证此security配置在其他security配置（调用者的配置）前调用，
 // 因为如果这个配置在其他配置后执行会覆盖之前的security配置
