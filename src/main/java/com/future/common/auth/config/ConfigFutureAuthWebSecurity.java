@@ -6,6 +6,7 @@ import com.future.common.constant.ErrorCodeConstant;
 import com.future.common.http.ObjectResponse;
 import com.future.common.http.ResponseUtils;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -74,6 +75,7 @@ public class ConfigFutureAuthWebSecurity extends WebSecurityConfigurerAdapter {
             public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 ObjectResponse<String> responseO = ResponseUtils.failObject(50002, "权限不足");
+                response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
                 response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                 response.getWriter().write(objectMapper.writeValueAsString(responseO));
             }
@@ -86,6 +88,7 @@ public class ConfigFutureAuthWebSecurity extends WebSecurityConfigurerAdapter {
             public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 ObjectResponse<String> responseO = ResponseUtils.failObject(ErrorCodeConstant.ErrorCodeLoginRequired, "您未登陆");
+                response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
                 response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                 response.getWriter().write(objectMapper.writeValueAsString(responseO));
             }
