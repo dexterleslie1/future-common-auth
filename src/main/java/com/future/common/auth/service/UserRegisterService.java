@@ -8,6 +8,7 @@ import com.future.common.auth.mapper.UserMapper;
 import com.future.common.exception.BusinessException;
 import com.future.common.phone.PhoneUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotBlank;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
  * 用户注册业务
  */
 @Slf4j
+@Validated
 public class UserRegisterService extends ServiceImpl<UserMapper, User> {
     @Resource
     VerificationCodeService verificationCodeService;
@@ -86,7 +88,9 @@ public class UserRegisterService extends ServiceImpl<UserMapper, User> {
      * @param loginName
      * @param password
      */
-    public void registerWithLoginName(String loginName, String password) throws BusinessException {
+    public void registerWithLoginName(
+            @NotNull(message = "请提供注册帐号")
+            @NotBlank(message = "请提供注册帐号") String loginName, String password) throws BusinessException {
         // 判断帐号是否存在
         QueryWrapper<User> queryWrapper = Wrappers.query();
         queryWrapper.eq("loginName", loginName);

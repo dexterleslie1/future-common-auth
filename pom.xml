@@ -4,7 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!--<groupId>com.future</groupId>-->
     <groupId>com.github.dexterleslie1</groupId>
     <artifactId>future-common-auth</artifactId>
     <version>1.0.1</version>
@@ -27,7 +26,7 @@
         <dependency>
             <groupId>com.github.dexterleslie1</groupId>
             <artifactId>future-common</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.2</version>
         </dependency>
 
         <!-- ObjectResponse等依赖此构件 -->

@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.annotation.Resource;
-
 import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -88,6 +87,22 @@ public class AuthorizationServerTests {
                             .queryParam("loginName", loginName))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data", is(false)));
+
+            // 不提供帐号
+            this.mockMvc.perform(post("/api/v1/future/auth/registerWithLoginName")
+                            .queryParam("password", "123456"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.errorMessage", is("Missing required parameter \"loginName\"!")));
+            this.mockMvc.perform(post("/api/v1/future/auth/registerWithLoginName")
+                            .queryParam("loginName", "")
+                            .queryParam("password", "123456"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.errorMessage", is("请提供注册帐号")));
+            this.mockMvc.perform(post("/api/v1/future/auth/registerWithLoginName")
+                            .queryParam("loginName", "          ")
+                            .queryParam("password", "123456"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.errorMessage", is("请提供注册帐号")));
 
             this.mockMvc.perform(post("/api/v1/future/auth/registerWithLoginName")
                             .queryParam("loginName", loginName)
