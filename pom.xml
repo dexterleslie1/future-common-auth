@@ -255,10 +255,11 @@
     </build>
 
     <repositories>
-        <repository>
+        <!-- 国内环境使用阿里加速，推送到jitpack.io时不能使用阿里，否则编译很慢 -->
+        <!--<repository>
             <id>aliyun</id>
             <url>https://maven.aliyun.com/repository/public</url>
-        </repository>
+        </repository>-->
         <repository>
             <id>jitpack</id>
             <url>https://jitpack.io</url>
